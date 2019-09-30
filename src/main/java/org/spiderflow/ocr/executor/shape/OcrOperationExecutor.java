@@ -44,34 +44,42 @@ public class OcrOperationExecutor implements ShapeExecutor{
 
 	@Override
 	public void execute(SpiderNode node, SpiderContext context, Map<String, Object> variables) {
-		String ocrId = node.getStringJsonValue(OCR_ID);
-		Ocr ocr = (Ocr) context.get(OcrExecutor.OCR_CONTEXT_KEY + ocrId);
-		if(!StringUtils.isNotBlank(ocrId)){
-			context.debug("请选择OCR！");
-		}else {
-			String bytesOrUrl = node.getStringJsonValue(BYTES_OR_URL);
-			JSONObject jsonResult = null;
-			if(bytesOrUrl.startsWith("http")) {
-				jsonResult = OcrUtil.ocrIdentify(ocr, bytesOrUrl);
+		try {
+			String ocrId = node.getStringJsonValue(OCR_ID);
+			Ocr ocr = (Ocr) context.get(OcrExecutor.OCR_CONTEXT_KEY + ocrId);
+			if(!StringUtils.isNotBlank(ocrId)){
+				context.debug("请选择OCR！");
 			}else {
-				byte[] bytes = (byte[]) engine.execute(bytesOrUrl, variables);
-				jsonResult = OcrUtil.ocrIdentify(ocr, bytes);
-			}
-			if(jsonResult != null) {
-				JSONArray wordsResult = jsonResult.getJSONArray("words_result");
-				if(wordsResult != null) {
-					double average = 0;
-					String identifyResult = "";
-					for (int i = 0; i < wordsResult.length(); i++) {
-						JSONObject probability = wordsResult.getJSONObject(i).getJSONObject("probability");
-						if(probability.getDouble("average") > average) {
-							average = probability.getDouble("average");
-							identifyResult = wordsResult.getJSONObject(i).getString("words");
+				String bytesOrUrl = node.getStringJsonValue(BYTES_OR_URL);
+				JSONObject jsonResult = null;
+				if(bytesOrUrl.startsWith("http")) {
+					jsonResult = OcrUtil.ocrIdentify(ocr, bytesOrUrl);
+				}else {
+					byte[] bytes = (byte[]) engine.execute(bytesOrUrl, variables);
+					jsonResult = OcrUtil.ocrIdentify(ocr, bytes);
+				}
+				if(jsonResult != null) {
+					if(jsonResult.isNull("words_result")) {
+						context.error(jsonResult.toString());
+					}else {
+						JSONArray wordsResult = jsonResult.getJSONArray("words_result");
+						if(wordsResult != null) {
+							double average = 0;
+							String identifyResult = "";
+							for (int i = 0; i < wordsResult.length(); i++) {
+								JSONObject probability = wordsResult.getJSONObject(i).getJSONObject("probability");
+								if(probability.getDouble("average") > average) {
+									average = probability.getDouble("average");
+									identifyResult = wordsResult.getJSONObject(i).getString("words");
+								}
+							}
+							variables.put(node.getStringJsonValue(VARIABLE_NAME),identifyResult);
 						}
 					}
-					variables.put(node.getStringJsonValue(VARIABLE_NAME),identifyResult);
 				}
 			}
+		} catch (Exception e) {
+			context.error("ocr操作错误：{}", e);
 		}
 	}
 	
