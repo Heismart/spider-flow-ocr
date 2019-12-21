@@ -3,6 +3,8 @@ package org.spiderflow.ocr.executor.shape;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spiderflow.context.SpiderContext;
 import org.spiderflow.executor.ShapeExecutor;
 import org.spiderflow.model.Shape;
@@ -20,6 +22,8 @@ public class OcrExecutor implements ShapeExecutor{
 	public static final String SECRET_KEY = "secretKey";
 	
 	public static final String OCR_CONTEXT_KEY = "$ocr_";
+
+	private static Logger logger = LoggerFactory.getLogger(OcrExecutor.class);
 	
 	@Override
 	public String supportShape() {
@@ -42,11 +46,11 @@ public class OcrExecutor implements ShapeExecutor{
 		String apiKey = node.getStringJsonValue(API_KEY);
 		String secretKey = node.getStringJsonValue(SECRET_KEY);
 		if (StringUtils.isBlank(appId)) {
-			context.debug("appId不能为空！");
+			logger.debug("appId不能为空！");
 		} else if (StringUtils.isBlank(apiKey)) {
-			context.debug("apiKey不能为空！");
+			logger.debug("apiKey不能为空！");
 		} else if (StringUtils.isBlank(secretKey)) {
-			context.debug("secretKey不能为空！");
+			logger.debug("secretKey不能为空！");
 		} else {
 			Ocr ocr = new Ocr(appId,apiKey,secretKey);
 			context.put(OCR_CONTEXT_KEY + node.getNodeId(), ocr);

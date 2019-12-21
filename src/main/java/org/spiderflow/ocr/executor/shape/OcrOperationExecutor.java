@@ -5,6 +5,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spiderflow.ExpressionEngine;
 import org.spiderflow.context.SpiderContext;
 import org.spiderflow.executor.ShapeExecutor;
@@ -23,6 +25,8 @@ public class OcrOperationExecutor implements ShapeExecutor{
 	public static final String BYTES_OR_URL = "bytesOrUrl";
 	
 	public static final String VARIABLE_NAME = "variableName";
+
+	private static Logger logger = LoggerFactory.getLogger(OcrOperationExecutor.class);
 	
 	@Autowired
 	private ExpressionEngine engine;
@@ -48,7 +52,7 @@ public class OcrOperationExecutor implements ShapeExecutor{
 			String ocrId = node.getStringJsonValue(OCR_ID);
 			Ocr ocr = (Ocr) context.get(OcrExecutor.OCR_CONTEXT_KEY + ocrId);
 			if(!StringUtils.isNotBlank(ocrId)){
-				context.debug("请选择OCR！");
+				logger.debug("请选择OCR！");
 			}else {
 				String bytesOrUrl = node.getStringJsonValue(BYTES_OR_URL);
 				JSONObject jsonResult = null;
@@ -60,7 +64,7 @@ public class OcrOperationExecutor implements ShapeExecutor{
 				}
 				if(jsonResult != null) {
 					if(jsonResult.isNull("words_result")) {
-						context.error(jsonResult.toString());
+						logger.error(jsonResult.toString());
 					}else {
 						JSONArray wordsResult = jsonResult.getJSONArray("words_result");
 						if(wordsResult != null) {
@@ -79,7 +83,7 @@ public class OcrOperationExecutor implements ShapeExecutor{
 				}
 			}
 		} catch (Exception e) {
-			context.error("ocr操作错误：{}", e);
+			logger.error("ocr操作错误：{}", e);
 		}
 	}
 	
