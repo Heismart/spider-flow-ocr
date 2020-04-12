@@ -3,6 +3,7 @@ package org.spiderflow.ocr.executor.shape;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.spiderflow.executor.ShapeExecutor;
 import org.spiderflow.model.Shape;
 import org.spiderflow.model.SpiderNode;
 import org.spiderflow.ocr.model.Ocr;
+import org.spiderflow.ocr.service.OcrService;
 import org.spiderflow.ocr.utils.OcrUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,9 +29,12 @@ public class OcrOperationExecutor implements ShapeExecutor{
 	public static final String VARIABLE_NAME = "variableName";
 
 	private static Logger logger = LoggerFactory.getLogger(OcrOperationExecutor.class);
-	
+
 	@Autowired
 	private ExpressionEngine engine;
+
+	@Autowired
+	private OcrService ocrService;
 	
 	@Override
 	public String supportShape() {
@@ -49,11 +54,11 @@ public class OcrOperationExecutor implements ShapeExecutor{
 	@Override
 	public void execute(SpiderNode node, SpiderContext context, Map<String, Object> variables) {
 		try {
-			String ocrId = node.getStringJsonValue(OCR_ID);
-			Ocr ocr = (Ocr) context.get(OcrExecutor.OCR_CONTEXT_KEY + ocrId);
-			if(!StringUtils.isNotBlank(ocrId)){
+			int ocrId = NumberUtils.toInt(node.getStringJsonValue(OCR_ID,"0"),0);
+			if(ocrId == 0){
 				logger.debug("请选择OCR！");
 			}else {
+				Ocr ocr = ocrService.get(ocrId + "");
 				String bytesOrUrl = node.getStringJsonValue(BYTES_OR_URL);
 				JSONObject jsonResult = null;
 				if(bytesOrUrl.startsWith("http")) {

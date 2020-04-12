@@ -40,3 +40,23 @@
     </div>
   </div>
 </div>
+<script>
+	$.ajax({
+		url : 'ocr/list',
+		data : {
+			limit : 9999
+		},
+		success : function(data){
+			var ocrs = data.records;
+			for(var i=0,len = ocrs.length;i<len;i++){
+				var ocr = ocrs[i];
+				$('select[name=ocrId]').append('<option value="'+ocr.id+'">'+ocr.ocrName+'</option>');
+			}
+			layui.form.render();
+			var selectOcrId = '{{=d.data.object.ocrId}}';
+			if(selectOcrId != ''){
+				$('.layui-form-select dd[lay-value='+selectOcrId+']').trigger('click');
+			}
+		}
+	})
+</script>
