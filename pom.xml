@@ -17,6 +17,13 @@
 			<groupId>org.spiderflow</groupId>
 			<artifactId>spider-flow-api</artifactId>
 			<scope>provided</scope>
+            <!-- 解决slf4j 日志包冲突 -->
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.baidu.aip</groupId>
